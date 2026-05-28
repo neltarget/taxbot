@@ -201,7 +201,7 @@ in plain text. Do not simply strip the symbols and leave the structure
 
 def create_client() -> OpenAI:
     api_key = os.environ.get("OPENROUTER_API_KEY")
-    model = os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-v4-flash:free")
+    model = os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
     base_url = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY environment variable is not set")
@@ -213,7 +213,7 @@ def get_response(client: OpenAI, model: str, messages: list) -> str:
         model=model,
         messages=messages,
         temperature=0.7,
-        max_tokens=500,
+        max_tokens=150,
     )
     return response.choices[0].message.content
 
