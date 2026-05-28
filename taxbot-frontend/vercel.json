@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "@PYTHON_BACKEND_URL/api/:path*"
+    }
+  ]
+}
