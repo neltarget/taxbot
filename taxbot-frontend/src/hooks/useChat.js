@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { sendChatMessage } from '../utils/api';
 
 const MAX_MESSAGE_LENGTH = 500;
+const MAX_HISTORY_LENGTH = 10;
 
 /**
  * Construct an error message appropriate to the Axios failure type.
@@ -71,8 +72,11 @@ export function useChat() {
       const userMessage = createMessage('user', trimmed);
 
       // Build history from current messages plus the new user message.
-      const history = messages.map(({ role, content }) => ({ role, content }));
-      history.push({ role: 'user', content: trimmed });
+      // Cap at last N messages to prevent context bloat and slow LLM responses.
+      const allMessages = [...messages, { role: 'user', content: trimmed }];
+      const history = allMessages
+        .slice(-MAX_HISTORY_LENGTH)
+        .map(({ role, content }) => ({ role, content }));
 
       setMessages((prev) => [...prev, userMessage]);
       setIsLoading(true);

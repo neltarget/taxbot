@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_TIMEOUT_MS = 30_000;
+const API_TIMEOUT_MS = 60_000;
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,

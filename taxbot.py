@@ -200,11 +200,11 @@ in plain text. Do not simply strip the symbols and leave the structure
 
 
 def create_client() -> OpenAI:
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    model = os.environ.get("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
-    base_url = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    api_key = os.environ.get("GROQ_API_KEY")
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    base_url = os.environ.get("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     if not api_key:
-        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
+        raise ValueError("GROQ_API_KEY environment variable is not set")
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
