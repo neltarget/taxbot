@@ -4,7 +4,8 @@ services:
     runtime: python
     plan: free
     buildCommand: >
-      pip install openai python-dotenv fastapi uvicorn python-multipart &&
+      pip install uv &&
+      uv sync --no-dev &&
       cd taxbot-frontend &&
       npm install &&
       npm run build
@@ -13,6 +14,6 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
-        value: deepseek/deepseek-v4-flash:free
+        value: meta-llama/llama-3.3-70b-instruct:free
       - key: PYTHON_VERSION
         value: 3.12.0
