@@ -18,12 +18,23 @@ function getScrollBehavior() {
 }
 
 /**
- * Format today's date for the date chip displayed above the first message.
+ * Format a timestamp for the date chip.
+ * Shows "Today" for today's messages, otherwise the full date.
  *
- * @returns {string} e.g. "Wed, 28 May 2025"
+ * @param {string} isoTimestamp
+ * @returns {string}
  */
-function formatTodayChip() {
-  return new Date().toLocaleDateString(undefined, {
+function formatDateChip(isoTimestamp) {
+  const date = new Date(isoTimestamp);
+  const now = new Date();
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate();
+
+  if (isToday) return 'Today';
+
+  return date.toLocaleDateString(undefined, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -37,12 +48,13 @@ function formatTodayChip() {
  * with auto-scroll-to-bottom on new messages and loading state.
  *
  * @param {{
- *   messages: Array<{ id: string, role: string, content: string, timestamp: string, isError?: boolean }>,
+ *   messages: Array<{ id: string, role: string, content: string, timestamp: string, isError?: boolean, sources?: Array<{source: string, category: string}>, retryPayload?: string|null }>,
  *   isLoading: boolean,
  *   onSuggestionClick: (text: string) => void,
+ *   onRetry: (text: string) => void,
  * }} props
  */
-export default function ChatWindow({ messages, isLoading, onSuggestionClick }) {
+export default function ChatWindow({ messages, isLoading, onSuggestionClick, onRetry }) {
   const bottomRef = useRef(null);
   const hasMessages = messages.length > 0;
 
@@ -71,7 +83,7 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick }) {
         {hasMessages && (
           <div className="flex justify-center mb-2">
             <span className="text-xs text-text-muted bg-surface border border-app-border rounded-full px-3 py-1">
-              {formatTodayChip()}
+              {formatDateChip(messages[0].timestamp)}
             </span>
           </div>
         )}
@@ -84,6 +96,8 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick }) {
             content={msg.content}
             timestamp={msg.timestamp}
             isError={msg.isError}
+            sources={msg.sources}
+            onRetry={msg.isError && msg.retryPayload ? () => onRetry(msg.retryPayload) : undefined}
           />
         ))}
 
@@ -91,7 +105,7 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick }) {
         {isLoading && <TypingIndicator />}
 
         {/* Scroll anchor */}
-        <div ref={bottomRef} aria-hidden="true" />
+        <div ref={bottomRef} aria-hidden="true" role="presentation" />
       </div>
     </div>
   );

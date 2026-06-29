@@ -110,10 +110,21 @@ class ChatRequest(BaseModel):
     )
 
 
+class SourceInfo(BaseModel):
+    """Metadata about a RAG source chunk."""
+
+    source: str = Field(..., description="Source document or URL.")
+    category: str = Field(default="", description="Content category.")
+
+
 class ChatResponse(BaseModel):
     """Successful response returned to the frontend."""
 
     reply: str = Field(..., description="TaxBot's response text.")
+    sources: list[SourceInfo] = Field(
+        default_factory=list,
+        description="RAG source metadata (empty if no context was retrieved).",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +161,7 @@ async def chat(request: Request, chat_request: ChatRequest) -> ChatResponse:
     ]
 
     # Retrieve relevant context from the RAG knowledge base
-    rag_context = retrieve_context(chat_request.message, n_results=3)
+    rag_context, rag_sources = retrieve_context(chat_request.message, n_results=3)
 
     try:
         reply = get_response(_client, _model, messages, rag_context=rag_context)
@@ -160,7 +171,10 @@ async def chat(request: Request, chat_request: ChatRequest) -> ChatResponse:
             detail=f"AI provider error: {exc}",
         ) from exc
 
-    return ChatResponse(reply=postprocess_response(reply))
+    return ChatResponse(
+        reply=postprocess_response(reply),
+        sources=[SourceInfo(**s) for s in rag_sources],
+    )
 
 
 @app.get("/health")

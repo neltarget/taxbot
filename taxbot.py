@@ -25,29 +25,36 @@ def _get_vector_db():
     return _vector_db
 
 
-def retrieve_context(query_text: str, n_results: int = 3) -> str:
+def retrieve_context(query_text: str, n_results: int = 3) -> tuple[str, list[dict]]:
     """
     Query ChromaDB for chunks relevant to the user's question.
-    Returns a formatted context string to inject into the system prompt.
+    Returns a tuple of (formatted context string, list of source metadata dicts).
     """
     vdb = _get_vector_db()
     if vdb is None or vdb.collection.count() == 0:
-        return ""
+        return "", []
 
     try:
         results = vdb.query(query_text=query_text, n_results=n_results)
     except Exception:
-        return ""
+        return "", []
 
     if not results['documents'][0]:
-        return ""
+        return "", []
 
     context_parts = []
+    sources = []
     for i, doc in enumerate(results['documents'][0]):
-        source = results['metadatas'][0][i].get('source', '')
+        meta = results['metadatas'][0][i]
+        source = meta.get('source', '')
+        category = meta.get('category', '')
         context_parts.append(f"[Source: {source}]\n{doc}")
+        sources.append({
+            "source": source,
+            "category": category,
+        })
 
-    return "\n\n---\n\n".join(context_parts)
+    return "\n\n---\n\n".join(context_parts), sources
 
 
 SYSTEM_PROMPT = '''You are TaxBot, an official AI-powered Tax Assistant for the Ghana Revenue Authority (GRA). Your job is to help individuals, businesses, and tax professionals in Ghana understand and navigate the Ghanaian tax system — clearly, warmly, and without unnecessary complexity.

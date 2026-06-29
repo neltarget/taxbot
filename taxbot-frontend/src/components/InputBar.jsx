@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const MAX_CHARS = 500;
 const CHAR_WARNING_THRESHOLD = 480;
@@ -16,6 +16,11 @@ const MAX_HEIGHT_PX = MAX_ROWS * LINE_HEIGHT_PX + PADDING_PX;
 export default function InputBar({ onSend, isLoading }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef(null);
+
+  // Auto-focus textarea on mount
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const trimmedLength = value.trim().length;
   const isEmpty = trimmedLength === 0;
@@ -87,7 +92,7 @@ export default function InputBar({ onSend, isLoading }) {
             rows={1}
             aria-label="Type your tax question"
             className={`w-full resize-none rounded-2xl border border-app-border
-              px-4 py-2.5 pr-16 text-sm leading-5
+              px-4 py-2.5 pr-20 text-sm leading-5
               focus:outline-none focus:ring-2 focus:ring-primary transition-all
               textarea-scrollbar
               ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}

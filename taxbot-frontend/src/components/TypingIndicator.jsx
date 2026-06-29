@@ -4,14 +4,13 @@
  */
 export default function TypingIndicator() {
   return (
-    <div className="flex justify-start items-end gap-2 fade-in">
+    <div className="flex justify-start items-end gap-2 fade-in" role="status" aria-label="TaxBot is typing a response">
       {/* Avatar */}
       <div
-        className="hidden xs:flex w-7 h-7 rounded-full bg-accent text-white items-center justify-center shrink-0"
+        className="flex w-5 h-5 xs:w-7 xs:h-7 rounded-full bg-accent text-white items-center justify-center shrink-0"
         aria-hidden="true"
-        style={{ minWidth: '1.75rem' }}
       >
-        <span className="text-[10px] font-bold leading-none">GRA</span>
+        <span className="text-[8px] xs:text-[10px] font-bold leading-none">GRA</span>
       </div>
 
       <div className="flex flex-col">

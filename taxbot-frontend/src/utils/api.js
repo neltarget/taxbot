@@ -13,11 +13,11 @@ const apiClient = axios.create({
  *
  * @param {string} message - The current user input.
  * @param {Array<{role: string, content: string}>} history - Prior conversation turns.
- * @returns {Promise<string>} The bot's reply text.
+ * @returns {Promise<{reply: string, sources: Array<{source: string, category: string}>}>}
  */
 export const sendChatMessage = async (message, history) => {
   const response = await apiClient.post('/api/chat', { message, history });
-  return response.data.reply;
+  return response.data;
 };
 
 export default apiClient;

@@ -10,7 +10,7 @@ import { useChat } from './hooks/useChat';
  * Layout uses a full-viewport flex column: header → chat → input bar.
  */
 export default function App() {
-  const { messages, isLoading, sendMessage, clearChat } = useChat();
+  const { messages, isLoading, sendMessage, retryMessage, clearChat } = useChat();
 
   return (
     <div className="flex flex-col h-screen bg-app-bg">
@@ -20,6 +20,7 @@ export default function App() {
         messages={messages}
         isLoading={isLoading}
         onSuggestionClick={sendMessage}
+        onRetry={retryMessage}
       />
 
       <InputBar onSend={sendMessage} isLoading={isLoading} />

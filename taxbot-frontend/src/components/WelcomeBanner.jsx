@@ -41,19 +41,11 @@ export default function WelcomeBanner({ onSuggestionClick, isLoading }) {
           <button
             key={chip}
             type="button"
-            role="button"
-            tabIndex={0}
             disabled={isLoading}
             onClick={() => onSuggestionClick(chip)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onSuggestionClick(chip);
-              }
-            }}
             className="border border-primary text-primary rounded-full px-4 py-2 text-sm
               hover:bg-green-50 transition-colors cursor-pointer
-              focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {chip}

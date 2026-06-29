@@ -4,6 +4,12 @@
  * @param {{ isLoading: boolean, clearChat: () => void }} props
  */
 export default function Header({ isLoading, clearChat }) {
+  const handleClear = () => {
+    if (window.confirm('Clear the entire conversation? This cannot be undone.')) {
+      clearChat();
+    }
+  };
+
   return (
     <header className="h-16 bg-surface border-b border-app-border flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
       {/* Left — Logo + branding */}
@@ -31,7 +37,7 @@ export default function Header({ isLoading, clearChat }) {
             className={`w-2 h-2 rounded-full ${
               isLoading
                 ? 'bg-amber-400 animate-pulse'
-                : 'bg-emerald-500 animate-pulse'
+                : 'bg-emerald-500'
             }`}
           />
           <span className="text-xs text-text-muted hidden sm:inline">
@@ -41,7 +47,7 @@ export default function Header({ isLoading, clearChat }) {
 
         {/* Clear chat button */}
         <button
-          onClick={clearChat}
+          onClick={handleClear}
           className="group relative p-2 rounded-lg text-text-muted hover:text-primary hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           aria-label="Clear chat — start a new conversation"
           title="Start a new conversation"

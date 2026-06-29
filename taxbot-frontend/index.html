@@ -18,7 +18,18 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading skeleton shown while React initializes -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:Inter,system-ui,sans-serif;background:#F9FAFB;color:#111827">
+        <div style="width:3rem;height:3rem;border-radius:9999px;background:#D4A017;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+          <span style="font-size:10px;font-weight:700;color:#fff">GRA</span>
+        </div>
+        <div style="height:4px;width:120px;background:#E5E7EB;border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:40%;background:#1B4332;border-radius:2px;animation:loading 1.2s ease-in-out infinite"></div>
+        </div>
+      </div>
+      <style>@keyframes loading{0%{transform:translateX(-100%)}50%{transform:translateX(200%)}100%{transform:translateX(-100%)}}</style>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -22,6 +22,7 @@ export default {
         'user-bubble': 'var(--color-user-bubble)',
         'app-border': 'var(--color-border)',
         'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
         'text-muted': 'var(--color-text-muted)',
         'error-bg': 'var(--color-error)',
         'error-text': 'var(--color-error-text)',
