@@ -44,9 +44,10 @@ async def lifespan(app: FastAPI):
     global _client, _model
     try:
         _client, _model = create_client()
-    except ValueError as exc:
-        # Surface configuration errors immediately on startup.
-        raise RuntimeError(f"TaxBot API failed to initialise: {exc}") from exc
+    except Exception as exc:
+        # Log the error but don't crash — server starts and returns 503
+        import sys
+        print(f"WARNING: TaxBot client failed to initialise: {exc}", file=sys.stderr)
     yield
     _client = None
     _model = None
