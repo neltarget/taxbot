@@ -252,7 +252,7 @@ def create_client() -> OpenAI:
     base_url = os.environ.get("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     if not api_key:
         raise ValueError("GROQ_API_KEY environment variable is not set")
-    return OpenAI(base_url=base_url, api_key=api_key), model
+    return OpenAI(base_url=base_url, api_key=api_key, timeout=30.0, max_retries=2), model
 
 
 def get_response(client: OpenAI, model: str, messages: list, rag_context: str = "") -> str:
