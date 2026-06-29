@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import sys
 
-from taxbot import SYSTEM_PROMPT, create_client, get_response, postprocess_response
+from taxbot import SYSTEM_PROMPT, create_client, get_response, postprocess_response, retrieve_context
 
 
 def safe_print(text: str):
@@ -43,8 +43,11 @@ def main():
 
         messages.append({"role": "user", "content": user_input})
 
+        # Retrieve relevant context from RAG knowledge base
+        rag_context = retrieve_context(user_input, n_results=3)
+
         try:
-            reply = get_response(client, model, messages)
+            reply = get_response(client, model, messages, rag_context=rag_context)
         except Exception as e:
             print(f"Error getting response: {e}")
             messages.pop()

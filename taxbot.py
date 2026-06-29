@@ -1,7 +1,53 @@
 import re
+from typing import Optional
 
 from openai import OpenAI
 import os
+
+
+# ---------------------------------------------------------------------------
+# RAG retrieval — query ChromaDB for relevant context
+# ---------------------------------------------------------------------------
+
+_vector_db = None
+
+
+def _get_vector_db():
+    """Lazy-load the ChromaDB vector database (import-heavy)."""
+    global _vector_db
+    if _vector_db is None:
+        try:
+            from chromadb_setup import TaxBotVectorDB
+            _vector_db = TaxBotVectorDB()
+        except Exception:
+            # ChromaDB not available — degrade gracefully to no-RAG mode
+            return None
+    return _vector_db
+
+
+def retrieve_context(query_text: str, n_results: int = 3) -> str:
+    """
+    Query ChromaDB for chunks relevant to the user's question.
+    Returns a formatted context string to inject into the system prompt.
+    """
+    vdb = _get_vector_db()
+    if vdb is None or vdb.collection.count() == 0:
+        return ""
+
+    try:
+        results = vdb.query(query_text=query_text, n_results=n_results)
+    except Exception:
+        return ""
+
+    if not results['documents'][0]:
+        return ""
+
+    context_parts = []
+    for i, doc in enumerate(results['documents'][0]):
+        source = results['metadatas'][0][i].get('source', '')
+        context_parts.append(f"[Source: {source}]\n{doc}")
+
+    return "\n\n---\n\n".join(context_parts)
 
 
 SYSTEM_PROMPT = '''You are TaxBot, an official AI-powered Tax Assistant for the Ghana Revenue Authority (GRA). Your job is to help individuals, businesses, and tax professionals in Ghana understand and navigate the Ghanaian tax system — clearly, warmly, and without unnecessary complexity.
@@ -202,12 +248,36 @@ def create_client() -> OpenAI:
     return OpenAI(base_url=base_url, api_key=api_key), model
 
 
-def get_response(client: OpenAI, model: str, messages: list) -> str:
+def get_response(client: OpenAI, model: str, messages: list, rag_context: str = "") -> str:
+    """
+    Send chat completion request with optional RAG context.
+
+    If rag_context is provided, it is injected into the system message
+    so the LLM can use it to answer the user's question.
+    """
+    if rag_context:
+        # Augment the system message with retrieved context
+        augmented_messages = list(messages)
+        if augmented_messages and augmented_messages[0]['role'] == 'system':
+            augmented_messages[0] = {
+                'role': 'system',
+                'content': (
+                    f"{augmented_messages[0]['content']}\n\n"
+                    f"---\nRELEVANT CONTEXT FROM GRA KNOWLEDGE BASE:\n\n"
+                    f"{rag_context}\n\n"
+                    f"---\n"
+                    f"Use the above context to inform your answer when relevant. "
+                    f"If the context does not help answer the question, rely on your general knowledge "
+                    f"and always direct the user to verify at gra.gov.gh."
+                ),
+            }
+        messages = augmented_messages
+
     response = client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=0.7,
-        max_tokens=150,
+        max_tokens=500,
     )
     return response.choices[0].message.content
 

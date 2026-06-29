@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-from taxbot import SYSTEM_PROMPT, create_client, get_response, postprocess_response
+from taxbot import SYSTEM_PROMPT, create_client, get_response, postprocess_response, retrieve_context
 
 load_dotenv()
 
@@ -132,8 +132,11 @@ async def chat(request: ChatRequest) -> ChatResponse:
         {"role": "user", "content": request.message},
     ]
 
+    # Retrieve relevant context from the RAG knowledge base
+    rag_context = retrieve_context(request.message, n_results=3)
+
     try:
-        reply = get_response(_client, _model, messages)
+        reply = get_response(_client, _model, messages, rag_context=rag_context)
     except Exception as exc:
         raise HTTPException(
             status_code=502,
