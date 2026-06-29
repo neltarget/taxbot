@@ -5,21 +5,30 @@ Wraps the existing taxbot.py logic in a REST endpoint that the React
 frontend consumes. All AI client logic lives in taxbot.py and is unchanged.
 """
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from taxbot import SYSTEM_PROMPT, create_client, get_response, postprocess_response, retrieve_context
 
 load_dotenv()
+
+# ---------------------------------------------------------------------------
+# Rate limiter — 10 requests per minute per IP on the chat endpoint.
+# ---------------------------------------------------------------------------
+
+limiter = Limiter(key_func=get_remote_address)
 
 # ---------------------------------------------------------------------------
 # Application lifespan — initialise the OpenAI/OpenRouter client once and
@@ -53,18 +62,25 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.state.limiter = limiter
 
-# Allow the Vite dev server and any Vercel deployment to reach this API.
-# In production, replace "*" with the exact Vercel domain.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# Allow the Vite dev server and the deployed frontend to reach this API.
+# Set ALLOWED_ORIGINS env var to a comma-separated list of origins for
+# production (e.g. "https://taxbot.vercel.app,https://taxbot.onrender.com").
+_allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
+if _allowed_origins:
+    _origins = [o.strip() for o in _allowed_origins.split(",") if o.strip()]
+else:
+    _origins = [
         "http://localhost:5173",   # Vite dev server
         "http://localhost:4173",   # Vite preview server
-        "*",                       # Vercel / any deployed origin
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_origins,
     allow_credentials=False,
-    allow_methods=["POST", "OPTIONS"],
+    allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
 
@@ -105,7 +121,8 @@ class ChatResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest) -> ChatResponse:
+@limiter.limit("10/minute")
+async def chat(request: Request, chat_request: ChatRequest) -> ChatResponse:
     """
     Accept a user message and conversation history, call the AI model,
     and return TaxBot's reply.
@@ -128,12 +145,12 @@ async def chat(request: ChatRequest) -> ChatResponse:
     # message so we append it here to keep the contract clean.
     messages: list[dict[str, str]] = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        *[{"role": msg.role, "content": msg.content} for msg in request.history],
-        {"role": "user", "content": request.message},
+        *[{"role": msg.role, "content": msg.content} for msg in chat_request.history],
+        {"role": "user", "content": chat_request.message},
     ]
 
     # Retrieve relevant context from the RAG knowledge base
-    rag_context = retrieve_context(request.message, n_results=3)
+    rag_context = retrieve_context(chat_request.message, n_results=3)
 
     try:
         reply = get_response(_client, _model, messages, rag_context=rag_context)

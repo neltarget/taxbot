@@ -4,5 +4,8 @@
       "source": "/api/:path*",
       "destination": "@PYTHON_BACKEND_URL/api/:path*"
     }
-  ]
+  ],
+  "env": {
+    "PYTHON_BACKEND_URL": "@PYTHON_BACKEND_URL"
+  }
 }
