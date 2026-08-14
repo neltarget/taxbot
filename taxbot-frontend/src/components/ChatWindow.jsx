@@ -6,8 +6,6 @@ import WelcomeBanner from './WelcomeBanner';
 /**
  * Determine whether to use smooth scrolling based on the user's
  * prefers-reduced-motion setting.
- *
- * @returns {'smooth' | 'auto'}
  */
 function getScrollBehavior() {
   if (typeof window === 'undefined') {
@@ -19,10 +17,6 @@ function getScrollBehavior() {
 
 /**
  * Format a timestamp for the date chip.
- * Shows "Today" for today's messages, otherwise the full date.
- *
- * @param {string} isoTimestamp
- * @returns {string}
  */
 function formatDateChip(isoTimestamp) {
   const date = new Date(isoTimestamp);
@@ -44,21 +38,12 @@ function formatDateChip(isoTimestamp) {
 
 /**
  * ChatWindow — Scrollable message display area.
- * Shows WelcomeBanner when empty, otherwise renders messages
- * with auto-scroll-to-bottom on new messages and loading state.
- *
- * @param {{
- *   messages: Array<{ id: string, role: string, content: string, timestamp: string, isError?: boolean, sources?: Array<{source: string, category: string}>, retryPayload?: string|null }>,
- *   isLoading: boolean,
- *   onSuggestionClick: (text: string) => void,
- *   onRetry: (text: string) => void,
- * }} props
+ * Notion-inspired: clean, spacious, elegant.
  */
 export default function ChatWindow({ messages, isLoading, onSuggestionClick, onRetry }) {
   const bottomRef = useRef(null);
   const hasMessages = messages.length > 0;
 
-  // Auto-scroll to bottom on new messages or when loading state changes.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: getScrollBehavior() });
   }, [messages, isLoading]);
@@ -70,7 +55,7 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick, onR
       aria-live="polite"
       aria-label="Chat messages"
     >
-      <div className="max-w-2xl mx-auto flex flex-col gap-4">
+      <div className="max-w-2xl mx-auto flex flex-col gap-3">
         {/* Welcome state */}
         {!hasMessages && !isLoading && (
           <WelcomeBanner
@@ -81,8 +66,8 @@ export default function ChatWindow({ messages, isLoading, onSuggestionClick, onR
 
         {/* Date chip */}
         {hasMessages && (
-          <div className="flex justify-center mb-2">
-            <span className="text-xs text-text-muted bg-surface border border-app-border rounded-full px-3 py-1">
+          <div className="flex justify-center mb-1">
+            <span className="text-[10px] text-white/50 bg-white/[0.03] border border-white/[0.04] rounded-full px-3 py-0.5 backdrop-blur-sm">
               {formatDateChip(messages[0].timestamp)}
             </span>
           </div>

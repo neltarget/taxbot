@@ -11,3 +11,9 @@ wheels/
 
 # Environment variables
 .env
+
+# RAG pipeline outputs (rebuilt during deploy)
+data/embedded_chunks.json
+data/chroma_db/
+data/chunked_dataset.csv
+data/cleaned_dataset.csv

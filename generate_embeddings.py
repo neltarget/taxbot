@@ -14,10 +14,7 @@ from dataclasses import dataclass
 @dataclass
 class EmbeddingConfig:
     """Configuration for embedding generation."""
-    model_name: str = "all-MiniLM-L6-v2"  # Sentence-transformers model
     batch_size: int = 32                     # Batch size for processing
-    normalize: bool = True                   # L2 normalize embeddings
-    device: str = "cpu"                      # cpu or cuda
 
 
 def load_chunks(input_path: str) -> pd.DataFrame:
@@ -30,20 +27,17 @@ def generate_embeddings(
     config: EmbeddingConfig
 ) -> np.ndarray:
     """
-    Generate embeddings for a list of texts using sentence-transformers.
+    Generate embeddings for a list of texts using ChromaDB's ONNX embedding function.
+    Uses the same all-MiniLM-L6-v2 model but via ONNX runtime (no torch needed).
     """
-    from sentence_transformers import SentenceTransformer
+    from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 
-    print(f"Loading model: {config.model_name}")
-    model = SentenceTransformer(config.model_name, device=config.device)
+    print("Loading ONNX embedding model (all-MiniLM-L6-v2)...")
+    ef = ONNXMiniLM_L6_V2()
 
     print(f"Generating embeddings for {len(texts)} chunks...")
-    embeddings = model.encode(
-        texts,
-        batch_size=config.batch_size,
-        show_progress_bar=True,
-        normalize_embeddings=config.normalize
-    )
+    embeddings_list = ef(texts)
+    embeddings = np.array(embeddings_list)
 
     print(f"Embedding dimension: {embeddings.shape[1]}")
     return embeddings
@@ -82,6 +76,7 @@ def save_embedded_chunks(
     # Create output structure
     output_data = {
         "model_name": "all-MiniLM-L6-v2",
+        "embedding_backend": "onnx",
         "embedding_dimension": embeddings.shape[1],
         "total_chunks": len(embedded_chunks),
         "chunks": embedded_chunks
@@ -101,10 +96,7 @@ def main():
     """Main execution function."""
     # Configuration
     config = EmbeddingConfig(
-        model_name="all-MiniLM-L6-v2",
         batch_size=32,
-        normalize=True,
-        device="cpu"
     )
 
     INPUT_PATH = str(Path(__file__).parent / 'data' / 'chunked_dataset.csv')
@@ -127,7 +119,7 @@ def main():
     print("EMBEDDING GENERATION COMPLETE")
     print(f"{'='*50}")
     print(f"Total chunks embedded: {len(chunks_df)}")
-    print(f"Embedding model: {config.model_name}")
+    print(f"Embedding model: all-MiniLM-L6-v2 (ONNX)")
     print(f"Embedding dimension: {embeddings.shape[1]}")
     print(f"Output file: {OUTPUT_PATH}")
 

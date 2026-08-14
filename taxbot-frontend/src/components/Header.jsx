@@ -1,78 +1,86 @@
+import { ChatCircleDots, Plus, List } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+
 /**
- * Header — Top bar with GRA branding, status indicator, and clear-chat action.
- *
- * @param {{ isLoading: boolean, clearChat: () => void }} props
+ * Header — Top bar with GRA branding, history toggle, status indicator, and new-chat action.
+ * Notion-inspired: warm minimal, soft surface, refined spacing.
  */
-export default function Header({ isLoading, clearChat }) {
+export default function Header({ isLoading, clearChat, isHistoryOpen, toggleHistory }) {
   const handleClear = () => {
-    if (window.confirm('Clear the entire conversation? This cannot be undone.')) {
-      clearChat();
-    }
+    clearChat();
+  };
+
+  const handleLogoClick = () => {
+    clearChat();
   };
 
   return (
-    <header className="h-16 bg-surface border-b border-app-border flex items-center justify-between px-4 md:px-6 shrink-0 z-10">
-      {/* Left — Logo + branding */}
-      <div className="flex items-center gap-3">
-        <img
-          src="/gra-logo.png"
-          alt="Ghana Revenue Authority logo"
-          className="w-8 h-8 rounded-sm object-contain"
-        />
+    <header className="h-14 md:h-15 shrink-0 z-10 flex items-center justify-between px-4 md:px-5
+      bg-white/[0.02] backdrop-blur-md border-b border-white/[0.05]">
+      {/* Left — Logo + branding (clickable — goes to start page) */}
+      <button
+        type="button"
+        onClick={handleLogoClick}
+        className="flex items-center gap-2.5 cursor-pointer group rounded-lg p-1 -ml-1 hover:bg-white/[0.04] transition-colors"
+        aria-label="Go to start page — new conversation"
+      >
+        <div className="flex w-7 h-7 rounded-md bg-gradient-to-br from-cyan-400/80 to-emerald-400/80 items-center justify-center shrink-0
+          shadow-[0_2px_8px_rgba(6,182,212,0.15)] group-hover:shadow-[0_2px_12px_rgba(6,182,212,0.25)] transition-shadow">
+          <ChatCircleDots className="w-3.5 h-3.5 text-white" weight="fill" />
+        </div>
         <div className="flex flex-col leading-tight">
-          <span className="font-semibold text-primary tracking-tight text-sm sm:text-base">
+          <span className="font-semibold text-white/95 tracking-tight text-sm">
             TaxBot
           </span>
-          <span className="text-[11px] text-text-muted hidden sm:block">
+          <span className="text-[10px] text-white/55 hidden sm:block tracking-wide">
             Ghana Revenue Authority
           </span>
         </div>
-      </div>
+      </button>
 
-      {/* Right — Status + Clear chat */}
-      <div className="flex items-center gap-4">
+      {/* Right — Status + actions */}
+      <div className="flex items-center gap-1.5">
         {/* Status indicator */}
-        <div className="flex items-center gap-1.5" aria-live="polite">
+        <div className="flex items-center gap-1.5 mr-1.5 px-2 py-1 rounded-full bg-white/[0.03]" aria-live="polite">
           <span
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full transition-colors ${
               isLoading
                 ? 'bg-amber-400 animate-pulse'
-                : 'bg-emerald-500'
+                : 'bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.3)]'
             }`}
           />
-          <span className="text-xs text-text-muted hidden sm:inline">
-            {isLoading ? 'Responding...' : 'Online'}
+          <span className="text-[11px] text-white/50 hidden sm:inline tabular-nums">
+            {isLoading ? 'Thinking...' : 'Online'}
           </span>
         </div>
 
-        {/* Clear chat button */}
-        <button
-          onClick={handleClear}
-          className="group relative p-2 rounded-lg text-text-muted hover:text-primary hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          aria-label="Clear chat — start a new conversation"
-          title="Start a new conversation"
+        {/* History toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleHistory}
+          className={`h-8 w-8 rounded-lg transition-all duration-200 ${
+            isHistoryOpen
+              ? 'text-white/80 bg-white/[0.06]'
+              : 'text-white/55 hover:text-white/75 hover:bg-white/[0.04]'
+          }`}
+          aria-label={isHistoryOpen ? 'Close chat history' : 'Open chat history'}
+          title="Chat history"
         >
-          {/* New chat icon — chat bubble + plus */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6v6m3-3H9"
-            />
-          </svg>
-        </button>
+          <List className="h-3.5 w-3.5" weight={isHistoryOpen ? 'fill' : 'regular'} />
+        </Button>
+
+        {/* New chat button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClear}
+          className="h-8 w-8 rounded-lg text-white/55 hover:text-white/75 hover:bg-white/[0.04] transition-all duration-200"
+          aria-label="Start a new conversation"
+          title="New conversation"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
       </div>
     </header>
   );

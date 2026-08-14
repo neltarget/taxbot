@@ -1,4 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { PaperPlaneRight } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 const MAX_CHARS = 500;
 const CHAR_WARNING_THRESHOLD = 480;
@@ -8,16 +11,13 @@ const PADDING_PX = 20;
 const MAX_HEIGHT_PX = MAX_ROWS * LINE_HEIGHT_PX + PADDING_PX;
 
 /**
- * InputBar — Auto-resizing textarea with send button, character counter,
- * and keyboard controls (Enter to send, Shift+Enter for newline).
- *
- * @param {{ onSend: (text: string) => void, isLoading: boolean }} props
+ * InputBar — Auto-resizing textarea with send button.
+ * Notion-inspired: warm, soft surface, refined interactions.
  */
 export default function InputBar({ onSend, isLoading }) {
   const [value, setValue] = useState('');
   const textareaRef = useRef(null);
 
-  // Auto-focus textarea on mount
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
@@ -27,9 +27,6 @@ export default function InputBar({ onSend, isLoading }) {
   const isOverLimit = value.length > MAX_CHARS;
   const isDisabled = isLoading || isEmpty || isOverLimit;
 
-  /**
-   * Recalculate textarea height to fit content, capped at MAX_ROWS.
-   */
   const adjustHeight = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -37,9 +34,6 @@ export default function InputBar({ onSend, isLoading }) {
     textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_HEIGHT_PX)}px`;
   }, []);
 
-  /**
-   * Send the current input and reset the textarea.
-   */
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || isLoading || trimmed.length > MAX_CHARS) return;
@@ -47,7 +41,6 @@ export default function InputBar({ onSend, isLoading }) {
     onSend(trimmed);
     setValue('');
 
-    // Reset height after clearing.
     requestAnimationFrame(() => {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -56,11 +49,6 @@ export default function InputBar({ onSend, isLoading }) {
     });
   }, [value, isLoading, onSend]);
 
-  /**
-   * Handle keyboard: Enter sends, Shift+Enter inserts newline.
-   *
-   * @param {React.KeyboardEvent<HTMLTextAreaElement>} event
-   */
   const handleKeyDown = useCallback(
     (event) => {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -73,13 +61,13 @@ export default function InputBar({ onSend, isLoading }) {
 
   return (
     <div
-      className="bg-surface border-t border-app-border shrink-0"
+      className="bg-white/[0.02] backdrop-blur-md border-t border-white/[0.04] shrink-0"
       style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="max-w-2xl mx-auto px-4 py-3 flex items-end gap-3">
-        {/* Textarea wrapper with character counter */}
+        {/* Textarea wrapper */}
         <div className="relative flex-1">
-          <textarea
+          <Textarea
             ref={textareaRef}
             value={value}
             onChange={(e) => {
@@ -91,22 +79,22 @@ export default function InputBar({ onSend, isLoading }) {
             placeholder="Ask me anything about taxes in Ghana..."
             rows={1}
             aria-label="Type your tax question"
-            className={`w-full resize-none rounded-2xl border border-app-border
-              px-4 py-2.5 pr-20 text-sm leading-5
-              focus:outline-none focus:ring-2 focus:ring-primary transition-all
-              textarea-scrollbar
-              ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}
-              ${isOverLimit ? 'border-red-400 focus:ring-red-400' : ''}`}
+            className={`resize-none rounded-xl pr-20 textarea-scrollbar
+              bg-white/[0.04] border-white/[0.06] text-white/95 placeholder:text-white/40
+              focus-visible:ring-cyan-400/20 focus-visible:border-cyan-400/20
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+              ${isOverLimit ? 'border-red-400/40 focus-visible:ring-red-400/20' : ''}
+            `}
             style={{ maxHeight: `${MAX_HEIGHT_PX}px` }}
           />
 
-          {/* Character counter — visible only when typing */}
+          {/* Character counter */}
           {value.length > 0 && (
             <span
-              className={`absolute bottom-2 right-3 text-[10px] select-none ${
+              className={`absolute bottom-2.5 right-3 text-[10px] select-none tabular-nums ${
                 value.length > CHAR_WARNING_THRESHOLD
-                  ? 'text-error-text'
-                  : 'text-text-muted'
+                  ? 'text-red-400/80'
+                  : 'text-white/45'
               }`}
               aria-live="polite"
             >
@@ -116,24 +104,20 @@ export default function InputBar({ onSend, isLoading }) {
         </div>
 
         {/* Send button */}
-        <button
-          type="button"
+        <Button
+          size="icon"
           onClick={handleSend}
           disabled={isDisabled}
           aria-label="Send message"
-          className={`w-10 h-10 rounded-full bg-primary text-white
-            flex items-center justify-center shrink-0
-            transition-colors
-            ${isDisabled
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-green-900 cursor-pointer'
-            }
-            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
+          className={`h-9 w-9 rounded-xl shrink-0 transition-all duration-200 ${
+            isDisabled
+              ? 'opacity-25 cursor-not-allowed bg-white/[0.04]'
+              : 'cursor-pointer bg-gradient-to-br from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-[0_2px_12px_rgba(6,182,212,0.2)] hover:shadow-[0_2px_16px_rgba(6,182,212,0.3)]'
+          }`}
         >
           {isLoading ? (
-            /* Spinner */
             <svg
-              className="w-5 h-5 animate-spin"
+              className="h-4 w-4 animate-spin text-white"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -152,24 +136,9 @@ export default function InputBar({ onSend, isLoading }) {
               />
             </svg>
           ) : (
-            /* Arrow icon */
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 5l7 7-7 7M5 12h14"
-              />
-            </svg>
+            <PaperPlaneRight className="h-4 w-4 text-white" weight="fill" />
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

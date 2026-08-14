@@ -79,50 +79,46 @@ Avoid sounding robotic. Responses should feel like they came from a person who k
 
 FORMATTING RULES — THESE ARE ABSOLUTE AND NON-NEGOTIABLE
 
-The chat interface does NOT render markdown. Any markdown that appears in a response will show as raw broken symbols. This is a critical failure. Follow every rule below on every single response without exception.
+The chat interface renders markdown. Use standard markdown formatting to structure your responses clearly.
+
+ALLOWED markdown:
+
+- Numbered lists for steps: write each step as a numbered item (1., 2., 3.) with a blank line between each step
+- Bold text for emphasis: **important terms** or **key points**
+- Paragraphs separated by blank lines
+- Plain URLs written as text only such as gra.gov.gh
 
 NEVER use any of the following:
 
-Headers of any kind such as ## Title or ### Subtitle or # H1.
-Bold or italic markers such as **text** or *text* or __text__ or _text_.
-Tables using pipe characters such as col and col and dashes.
-Bullet or list symbols such as - or * or + or the dot symbol.
-Horizontal rules such as --- or ___ or ***.
-Markdown hyperlinks such as label in brackets followed by url in parentheses.
-Code blocks or backticks of any kind.
-HTML tags such as br or b or strong or p.
-
-ALWAYS use instead:
-
-Plain sentences written in natural flowing prose.
-A blank line between each paragraph or distinct point.
-The step labels "Step 1:", "Step 2:", "Step 3:" and so on, each written at the start of its own separate line with a blank line before and after it.
-Plain URLs written as text only such as gra.gov.gh.
+- Headers of any kind such as ## Title or ### Subtitle or # H1.
+- Tables using pipe characters.
+- Horizontal rules such as --- or ___ or ***.
+- HTML tags such as br or b or strong or p.
 
 
 THE SINGLE MOST IMPORTANT FORMATTING RULE — READ THIS CAREFULLY
 
-When your response includes steps, you MUST write each step on its own completely separate line with a blank line above it and a blank line below it. Steps must NEVER run together on the same line or follow directly after each other without spacing. Steps must NEVER be attached to or follow directly from an introductory sentence.
+When your response includes steps, you MUST use a markdown numbered list. Each step must be on its own line with a blank line separating each step block. Steps must NEVER run together on the same line.
 
 This is the ONLY correct way to write steps:
 
-[blank line]
-Step 1: Go to gra.gov.gh and click on e-Tax Services.
-[blank line]
-Step 2: Select New TIN Registration and fill in your personal details as they appear on your Ghana ID.
-[blank line]
-Step 3: Upload a scanned copy of your ID and a recent proof of address such as a utility bill or bank statement.
-[blank line]
-Step 4: Submit the form. You will get a confirmation email with your TIN within a few minutes.
-[blank line]
+Write a brief introductory sentence explaining what the steps are for.
+
+1. Go to gra.gov.gh and click on e-Tax Services.
+
+2. Select New TIN Registration and fill in your personal details as they appear on your Ghana ID.
+
+3. Upload a scanned copy of your ID and a recent proof of address such as a utility bill or bank statement.
+
+4. Submit the form. You will get a confirmation email with your TIN within a few minutes.
 
 This is WRONG and must never happen:
 
-To register for a TIN, go to gra.gov.gh. Step 1: Click e-Tax Services. Step 2: Select New TIN Registration. Step 3: Upload your ID.
+To register for a TIN, go to gra.gov.gh. 1. Click e-Tax Services. 2. Select New TIN Registration. 3. Upload your ID.
 
-That example is wrong because all the steps run together on one line. It is also wrong because the introductory sentence flows directly into Step 1 without a line break.
+That example is wrong because all the steps run together on one line. It is also wrong because the introductory sentence flows directly into step 1 without a line break.
 
-If your response has an opening sentence or short paragraph before the steps, you must leave a blank line between that paragraph and Step 1. The opening paragraph and the steps are always visually separated.
+If your response has an opening sentence or short paragraph before the steps, you must leave a blank line between that paragraph and step 1. The opening paragraph and the steps are always visually separated.
 
 There is no situation where two steps appear on the same line. There is no situation where a step follows another step without a blank line between them. If you find yourself writing steps without blank lines between them, stop and rewrite the entire response correctly before sending it.
 
@@ -231,7 +227,7 @@ SELF-CHECK BEFORE EVERY RESPONSE
 
 Before sending any response, run through all seven checks. A response only passes when every check is clear.
 
-Check 1: Does it contain any markdown symbol? If yes, rewrite the response entirely in plain prose. Do not just strip the symbols — rewrite as natural prose.
+Check 1: Are the steps formatted as a numbered markdown list (1., 2., 3.)? If not, rewrite as a proper numbered list.
 
 Check 2: Is it longer than the length target for this type of question? If yes, cut it down by removing summaries, filler, and repeated points.
 
@@ -290,53 +286,94 @@ def get_response(client: OpenAI, model: str, messages: list, rag_context: str = 
 
 
 # ---------------------------------------------------------------------------
-# Response post-processing — enforce plain-text and length rules
+# Response post-processing — enforce length and clean up formatting
 # ---------------------------------------------------------------------------
 
-# Markdown patterns that may slip through despite the system prompt
-_MD_PATTERNS: list[tuple[re.Pattern, str]] = [
-    (re.compile(r"#{1,6}\s*"), ""),
-    (re.compile(r"\*\*(.*?)\*\*"), r"\1"),
-    (re.compile(r"\*(.*?)\*"), r"\1"),
-    (re.compile(r"__(.*?)__"), r"\1"),
-    (re.compile(r"_(.*?)_"), r"\1"),
-    (re.compile(r"\[([^\]]+)\]\([^)]+\)"), r"\1"),
-    (re.compile(r"`{1,3}[^`]*`{1,3}"), ""),
-    (re.compile(r"^\s*[-*+]\s*", re.MULTILINE), ""),
-    (re.compile(r"^\s*\d+\.\s*", re.MULTILINE), ""),
-    (re.compile(r"^---+.*$", re.MULTILINE), ""),
-    (re.compile(r"^\|.*\|$", re.MULTILINE), ""),
-]
+_STEP_PATTERN = re.compile(
+    r"(?:^|(?<=[.!?])\s*|(?<=\n)\s*)Step\s+(\d+)\s*:\s*", re.MULTILINE | re.IGNORECASE
+)
 
 
-def strip_markdown(text: str) -> str:
-    """Remove residual markdown symbols that may appear in model output."""
-    cleaned = text
-    for pattern, replacement in _MD_PATTERNS:
-        cleaned = pattern.sub(replacement, cleaned)
-    return cleaned
+def _convert_steps_to_markdown(text: str) -> str:
+    """Convert 'Step 1:' / 'Step 2:' plain text into markdown numbered list items."""
+    blocks = re.split(r"\n{2,}", text.strip())
+    result = []
+    step_counter = 0
+
+    for block in blocks:
+        steps_in_block = list(_STEP_PATTERN.finditer(block))
+        if not steps_in_block:
+            result.append(block)
+            continue
+
+        pre = block[: steps_in_block[0].start()].strip()
+        if pre:
+            result.append(pre)
+
+        parts = _STEP_PATTERN.split(block)
+        # parts[0] is pre-step text, then alternating: step_number, step_text
+        for i in range(1, len(parts), 2):
+            step_counter += 1
+            step_text = parts[i + 1].strip() if i + 1 < len(parts) else ""
+            if step_text:
+                # Clean trailing period before adding
+                step_text = step_text.rstrip(".")
+                result.append(f"{step_counter}. {step_text}.")
+
+    # Always join numbered items with blank lines for proper markdown rendering
+    return "\n\n".join(result)
 
 
-def truncate_to_target(text: str, max_sentences: int = 6) -> str:
+def truncate_to_target(text: str, max_sentences: int = 8, max_steps: int = 5) -> str:
     """
-    Hard-truncate a response to a reasonable sentence count.
-    Cuts at the last complete sentence within the limit.
+    Hard-truncate a response to a reasonable length.
+    Preserves line structure (blank lines between numbered items).
+    For step-based responses, caps at max_steps items.
+    For prose, caps at max_sentences sentences.
     """
+    lines = text.strip().split("\n")
+
+    # Count numbered list items
+    step_lines = [(i, l) for i, l in enumerate(lines) if re.match(r"^\d+\.\s", l.strip())]
+
+    if len(step_lines) > max_steps:
+        cut_at = step_lines[max_steps][0]
+        result = lines[:cut_at]
+        truncated = "\n".join(result).rstrip().rstrip(".")
+        truncated += ". Would you like a more detailed breakdown?"
+        return truncated
+
+    # For responses with numbered items, preserve structure
+    if step_lines:
+        return text.strip()
+
+    # Pure prose truncation — count sentences
     sentences = re.split(r"(?<=[.!?])\s+", text.strip())
     if len(sentences) <= max_sentences:
         return text.strip()
     truncated = " ".join(sentences[:max_sentences])
-    # Offer a detailed-breakdown prompt if we had to cut
-    if not text.rstrip().endswith("?"):
+    if not truncated.rstrip().endswith("?"):
         truncated = truncated.rstrip(".")
         truncated += ". Would you like a more detailed breakdown?"
     return truncated
 
 
+def _strip_unwanted_md(text: str) -> str:
+    """Remove markdown that should not appear: headers, code, tables, horizontal rules."""
+    cleaned = text
+    cleaned = re.sub(r"#{1,6}\s*", "", cleaned)           # headers
+    cleaned = re.sub(r"__(.*?)__", r"\1", cleaned)        # __bold__
+    cleaned = re.sub(r"_(.*?)_", r"\1", cleaned)          # _italic_
+    cleaned = re.sub(r"`{1,3}[^`]*`{1,3}", "", cleaned)   # code blocks
+    cleaned = re.sub(r"^---+.*$", "", cleaned, flags=re.MULTILINE)  # hr
+    cleaned = re.sub(r"^\|.*\|$", "", cleaned, flags=re.MULTILINE)  # tables
+    return cleaned
+
+
 def postprocess_response(text: str) -> str:
-    """Full post-processing pipeline: strip markdown, then enforce length."""
-    cleaned = strip_markdown(text)
+    """Full post-processing pipeline: convert steps, clean up, enforce length."""
+    cleaned = _strip_unwanted_md(text)
+    cleaned = _convert_steps_to_markdown(cleaned)
     cleaned = truncate_to_target(cleaned)
-    # Collapse 3+ blank lines into 2
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
     return cleaned.strip()

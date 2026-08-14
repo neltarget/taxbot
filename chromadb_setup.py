@@ -16,7 +16,8 @@ DATA_DIR = BASE_DIR / 'data'
 CHROMA_DB_PATH = str(DATA_DIR / 'chroma_db')
 EMBEDDINGS_PATH = str(DATA_DIR / 'embedded_chunks.json')
 
-# Embedding model must match generate_embeddings.py
+# Embedding model — ONNX variant of all-MiniLM-L6-v2 (no torch needed)
+# Must match generate_embeddings.py
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # Similarity threshold — chunks with distance above this are discarded
@@ -36,9 +37,8 @@ class TaxBotVectorDB:
         self.collection_name = collection_name
 
         # Use the SAME embedding function for storage and queries
-        self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name=EMBEDDING_MODEL
-        )
+        # ONNX variant of all-MiniLM-L6-v2 — no torch/sentence-transformers needed
+        self.embedding_fn = embedding_functions.ONNXMiniLM_L6_V2()
 
         self.client = chromadb.PersistentClient(path=persist_directory)
 
