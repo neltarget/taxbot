@@ -81,7 +81,7 @@ export default function InputBar({ onSend, isLoading }) {
             aria-label="Type your tax question"
             className={`resize-none rounded-xl pr-20 textarea-scrollbar
               bg-white/[0.04] border-white/[0.06] text-white/95 placeholder:text-white/40
-              focus-visible:ring-cyan-400/20 focus-visible:border-cyan-400/20
+              focus-visible:ring-amber-500/20 focus-visible:border-amber-500/20
               ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
               ${isOverLimit ? 'border-red-400/40 focus-visible:ring-red-400/20' : ''}
             `}
@@ -112,7 +112,7 @@ export default function InputBar({ onSend, isLoading }) {
           className={`h-9 w-9 rounded-xl shrink-0 transition-all duration-200 ${
             isDisabled
               ? 'opacity-25 cursor-not-allowed bg-white/[0.04]'
-              : 'cursor-pointer bg-gradient-to-br from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 shadow-[0_2px_12px_rgba(6,182,212,0.2)] hover:shadow-[0_2px_16px_rgba(6,182,212,0.3)]'
+               : 'cursor-pointer bg-gradient-to-br from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 shadow-[0_2px_12px_rgba(196,146,42,0.2)] hover:shadow-[0_2px_16px_rgba(196,146,42,0.3)]'
           }`}
         >
           {isLoading ? (

@@ -24,8 +24,8 @@ export default function Header({ isLoading, clearChat, isHistoryOpen, toggleHist
         className="flex items-center gap-2.5 cursor-pointer group rounded-lg p-1 -ml-1 hover:bg-white/[0.04] transition-colors"
         aria-label="Go to start page — new conversation"
       >
-        <div className="flex w-7 h-7 rounded-md bg-gradient-to-br from-cyan-400/80 to-emerald-400/80 items-center justify-center shrink-0
-          shadow-[0_2px_8px_rgba(6,182,212,0.15)] group-hover:shadow-[0_2px_12px_rgba(6,182,212,0.25)] transition-shadow">
+        <div className="flex w-7 h-7 rounded-md bg-gradient-to-br from-amber-500/80 to-yellow-600/80 items-center justify-center shrink-0
+          shadow-[0_2px_8px_rgba(196,146,42,0.15)] group-hover:shadow-[0_2px_12px_rgba(196,146,42,0.25)] transition-shadow">
           <ChatCircleDots className="w-3.5 h-3.5 text-white" weight="fill" />
         </div>
         <div className="flex flex-col leading-tight">
@@ -46,7 +46,7 @@ export default function Header({ isLoading, clearChat, isHistoryOpen, toggleHist
             className={`w-1.5 h-1.5 rounded-full transition-colors ${
               isLoading
                 ? 'bg-amber-400 animate-pulse'
-                : 'bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.3)]'
+                : 'bg-amber-500 shadow-[0_0_4px_rgba(196,146,42,0.3)]'
             }`}
           />
           <span className="text-[11px] text-white/50 hidden sm:inline tabular-nums">

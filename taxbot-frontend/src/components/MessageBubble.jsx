@@ -84,8 +84,8 @@ function MessageBubble({ role, content, timestamp, isError, sources, onRetry }) 
       {/* Bot avatar */}
       {!isUser && (
         <div
-          className="flex w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400/60 to-emerald-400/60 items-center justify-center shrink-0
-            shadow-[0_1px_4px_rgba(6,182,212,0.1)]"
+          className="flex w-6 h-6 rounded-md bg-gradient-to-br from-amber-500/60 to-yellow-600/60 items-center justify-center shrink-0
+            shadow-[0_1px_4px_rgba(196,146,42,0.1)]"
           aria-hidden="true"
         >
           <span className="text-[9px] font-bold text-white leading-none">GRA</span>
@@ -126,7 +126,7 @@ function MessageBubble({ role, content, timestamp, isError, sources, onRetry }) 
                 strong: ({ children }) => <strong className="font-semibold text-white/95">{children}</strong>,
                 em: ({ children }) => <em className="italic">{children}</em>,
                 a: ({ href, children }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-cyan-300/80 hover:text-cyan-200/90 transition-colors">
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="underline text-amber-400/80 hover:text-amber-300/90 transition-colors">
                     {children}
                   </a>
                 ),

@@ -14,8 +14,8 @@ export default function WelcomeBanner({ onSuggestionClick, isLoading }) {
   return (
     <div className="flex flex-col items-center justify-center text-center px-6 py-20 animate-fade-in">
       {/* Logo mark with soft glow */}
-      <div className="flex w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400/70 to-emerald-400/70 items-center justify-center mb-5
-        shadow-[0_4px_24px_rgba(6,182,212,0.12)]">
+      <div className="flex w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/70 to-yellow-600/70 items-center justify-center mb-5
+        shadow-[0_4px_24px_rgba(196,146,42,0.12)]">
         <span className="text-lg font-bold text-white leading-none tracking-tight">GRA</span>
       </div>
 
