@@ -244,7 +244,7 @@ Check 7: Does the tone feel robotic, stiff, or overly formal? If yes, rewrite in
 
 def create_client() -> OpenAI:
     api_key = os.environ.get("GROQ_API_KEY")
-    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    model = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
     base_url = os.environ.get("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     if not api_key:
         raise ValueError("GROQ_API_KEY environment variable is not set")

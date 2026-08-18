@@ -39,7 +39,7 @@ Frontend expects `VITE_API_URL` in `.env` (defaults to `http://localhost:8000`).
 | Variable | Where | Purpose |
 |---|---|---|
 | `GROQ_API_KEY` | Backend `.env` | Required. Groq API key for LLM |
-| `GROQ_MODEL` | Backend `.env` | Optional. Default: `llama-3.3-70b-versatile` |
+| `GROQ_MODEL` | Backend `.env` | Optional. Default: `openai/gpt-oss-120b` |
 | `GROQ_BASE_URL` | Backend `.env` | Optional. Default: `https://api.groq.com/openai/v1` |
 | `ALLOWED_ORIGINS` | Backend `.env` | Optional. Comma-separated CORS origins for production |
 | `VITE_API_URL` | Frontend `.env` | API base URL. Leave empty on Render for same-origin |
